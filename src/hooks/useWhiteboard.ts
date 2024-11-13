@@ -1,4 +1,3 @@
-// src/hooks/useWhiteboard.ts
 import { useState, useRef, useEffect } from "react";
 import { annotate } from "rough-notation";
 import { RoughAnnotation, RoughAnnotationType } from "rough-notation/lib/model";
@@ -10,6 +9,7 @@ const useWhiteboard = (mockServer: any) => {
   const [content, setContent] = useState<string>("");
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [annotations, setAnnotations] = useState<RoughAnnotation[]>([]);
+  const [typingSpeed, setTypingSpeed] = useState<number>(12);
   const [annotationHistory, setAnnotationHistory] = useState<Set<string>>(
     new Set()
   );
@@ -18,7 +18,6 @@ const useWhiteboard = (mockServer: any) => {
     useState<number>(0);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const endOfContainerRef = useRef<HTMLDivElement | null>(null);
-  const typingSpeed = 5;
 
   const animateText = async (text: string, isAppend: boolean = false) => {
     setIsAnimating(true);
@@ -52,14 +51,32 @@ const useWhiteboard = (mockServer: any) => {
     await animateText(mockServer.write.text);
   };
 
+  const animateAppendText = async (text: string) => {
+    if (contentRef.current) {
+      const chars = text.split("");
+      let currentText = "";
+      const appendContainer = document.createElement("div");
+      contentRef.current.appendChild(appendContainer);
+
+      for (const char of chars) {
+        currentText += char;
+        appendContainer.innerHTML = converter.makeHtml(currentText);
+        endOfContainerRef.current?.scrollIntoView({ behavior: "smooth" });
+        await new Promise((resolve) => setTimeout(resolve, typingSpeed));
+      }
+    }
+  };
+
   const handleAppend = async () => {
     if (!isAnimating) {
+      setIsAnimating(true); // Set animating state to true
       const appendCommand =
         mockServer.append[currentAppendIndex % mockServer.append.length];
-      await animateText(appendCommand.text, true);
+
+      // Animate the appending of text
+      await animateAppendText(appendCommand.text); // Call the new animation function
       setCurrentAppendIndex((prev) => prev + 1);
-      setAnnotationHistory(new Set());
-      setCurrentAnnotationIndex(0);
+      setIsAnimating(false); // Reset animating state after appending
     }
   };
 
@@ -70,7 +87,7 @@ const useWhiteboard = (mockServer: any) => {
   ) => {
     const annotation = annotate(element, {
       type: (type as RoughAnnotationType) || "highlight",
-      color: color || "#FFF176",
+      color: color || "#d5c9176b",
       animationDuration: 1000,
       padding: 5,
     });
@@ -172,6 +189,7 @@ const useWhiteboard = (mockServer: any) => {
     if (contentRef.current) {
       contentRef.current.innerHTML = converter.makeHtml(content);
     }
+
     if (endOfContainerRef.current) {
       endOfContainerRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -187,6 +205,8 @@ const useWhiteboard = (mockServer: any) => {
     contentRef,
     endOfContainerRef,
     currentAnnotationIndex,
+    setTypingSpeed,
+    typingSpeed,
   };
 };
 

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import Controls from "./components/Controls";
 import Whiteboard from "./components/Whiteboard";
 import useWhiteboard from "./hooks/useWhiteboard";
+import Settings from "./components/Settings";
 
 const mockServer = {
   write: {
@@ -28,7 +29,6 @@ const mockServer = {
       mode: "ANNOTATE",
       pattern: "whiteboard",
       type: "highlight",
-      color: "#FFF176",
     },
     {
       mode: "ANNOTATE",
@@ -42,6 +42,12 @@ const mockServer = {
 };
 
 const App: React.FC = () => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+
+  const toggleDrawer = () => {
+    setIsDrawerOpen((prev) => !prev);
+  };
+
   const {
     content,
     isAnimating,
@@ -51,11 +57,13 @@ const App: React.FC = () => {
     contentRef,
     endOfContainerRef,
     currentAnnotationIndex,
+    setTypingSpeed,
+    typingSpeed,
   } = useWhiteboard(mockServer);
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-100">
-      <div className="w-full py-6 bg-white shadow-sm flex-shrink-0">
+      <div className="w-full py-3 bg-white flex-shrink-0 shadow-lg shadow-gray-300 border-b-2">
         <Controls
           handleWrite={handleWrite}
           handleAppend={handleAppend}
@@ -63,21 +71,30 @@ const App: React.FC = () => {
           isAnimating={isAnimating}
           currentAnnotationIndex={currentAnnotationIndex}
           totalAnnotations={mockServer.annotations.length}
+          typingSpeed={typingSpeed}
+          setTypingSpeed={setTypingSpeed}
+          toggleDrawer={toggleDrawer}
         />
       </div>
-      <div className="flex-1 p-6 overflow-auto relative">
-        <div className="p-8">
-          <div className="max-w-4xl mx-auto prose prose-lg">
-            {content ? (
-              <Whiteboard contentRef={contentRef} />
-            ) : (
-              <div className="text-center text-gray-500 italic">
-                Click on any of the above commands to see the whiteboard in
-                action!
-              </div>
-            )}
-            <div ref={endOfContainerRef}></div>
-          </div>
+
+      <Settings
+        isDrawerOpen={isDrawerOpen}
+        toggleDrawer={toggleDrawer}
+        typingSpeed={typingSpeed}
+        setTypingSpeed={setTypingSpeed}
+      />
+
+      <div className="w-full h-full overflow-auto notebook">
+        <div className="h-full mx-auto relative prose prose-lg">
+          {content ? (
+            <Whiteboard contentRef={contentRef} />
+          ) : (
+            <div className="p-10 text-center text-gray-500 italic">
+              Click on any of the above commands to see the whiteboard in
+              action!
+            </div>
+          )}
+          <div ref={endOfContainerRef}></div>
         </div>
       </div>
     </div>
