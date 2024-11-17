@@ -8,6 +8,7 @@ import { FiPlus } from "react-icons/fi";
 interface ControlsProps {
   handleWrite: () => void;
   handleAppend: () => void;
+  handleExtend: () => void;
   handleAnnotate: (color: string, type: string) => void;
   isAnimating: boolean;
   currentAnnotationIndex: number;
@@ -25,6 +26,7 @@ const Controls: React.FC<ControlsProps> = ({
   currentAnnotationIndex,
   totalAnnotations,
   toggleDrawer,
+  handleExtend,
 }) => {
   const [selectedColor] = useState<string>("#FFF176");
   const [selectedType] = useState<string>("highlight");
@@ -65,6 +67,23 @@ const Controls: React.FC<ControlsProps> = ({
           disabled={isAnimating}
         >
           APPEND
+          <span>
+            <FiPlus />
+          </span>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className={`px-8 py-2 rounded-lg font-medium text-sm ${
+            isAnimating
+              ? "bg-gray-300 text-gray-500"
+              : "bg-green-600 text-white hover:bg-green-700"
+          } transition-colors duration-200 shadow-md flex gap-2 place-items-center`}
+          onClick={handleExtend}
+          disabled={isAnimating}
+        >
+          EXTEND
           <span>
             <FiPlus />
           </span>

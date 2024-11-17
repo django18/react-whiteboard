@@ -51,12 +51,28 @@ const useWhiteboard = (mockServer: any) => {
     await animateText(mockServer.write.text);
   };
 
-  const animateAppendText = async (text: string) => {
+  const animateAppendText = async (text: string, isExtend?: boolean) => {
     if (contentRef.current) {
       const chars = text.split("");
       let currentText = "";
-      const appendContainer = document.createElement("div");
-      contentRef.current.appendChild(appendContainer);
+      let appendContainer;
+
+      if (isExtend) {
+        appendContainer = document.createElement("span");
+        appendContainer.className = "extend-span";
+        // Handle extend operation
+        if (contentRef.current.lastChild) {
+          const lastChild = contentRef.current.lastChild as HTMLElement;
+          const targetNode = lastChild.classList.contains("extend-div")
+            ? lastChild.lastChild || lastChild
+            : lastChild;
+          targetNode.appendChild(appendContainer);
+        }
+      } else {
+        appendContainer = document.createElement("div");
+        appendContainer.className = "extend-div";
+        contentRef.current.appendChild(appendContainer);
+      }
 
       for (const char of chars) {
         currentText += char;
@@ -75,6 +91,18 @@ const useWhiteboard = (mockServer: any) => {
 
       // Animate the appending of text
       await animateAppendText(appendCommand.text); // Call the new animation function
+      setCurrentAppendIndex((prev) => prev + 1);
+      setIsAnimating(false); // Reset animating state after appending
+    }
+  };
+
+  const handleExtend = async () => {
+    if (!isAnimating) {
+      setIsAnimating(true); // Set animating state to true
+      const appendCommand = mockServer.append[mockServer.append.length - 1];
+
+      // Animate the appending of text
+      await animateAppendText(appendCommand.text, true); // Call the new animation function
       setCurrentAppendIndex((prev) => prev + 1);
       setIsAnimating(false); // Reset animating state after appending
     }
@@ -207,6 +235,7 @@ const useWhiteboard = (mockServer: any) => {
     currentAnnotationIndex,
     setTypingSpeed,
     typingSpeed,
+    handleExtend,
   };
 };
 

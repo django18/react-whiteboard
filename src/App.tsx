@@ -23,12 +23,17 @@ const mockServer = {
       mode: "APPEND",
       text: "\n\n### Another Subsection\nHere is a list:\n- Item 1\n- Item 2\n- Item 3",
     },
+    {
+      mode: "EXTEND",
+      text: "**Another Subsection**",
+    },
   ],
   annotations: [
     {
       mode: "ANNOTATE",
       pattern: "whiteboard",
       type: "highlight",
+      index: 1,
     },
     {
       mode: "ANNOTATE",
@@ -59,6 +64,7 @@ const App: React.FC = () => {
     currentAnnotationIndex,
     setTypingSpeed,
     typingSpeed,
+    handleExtend,
   } = useWhiteboard(mockServer);
 
   return (
@@ -74,6 +80,7 @@ const App: React.FC = () => {
           typingSpeed={typingSpeed}
           setTypingSpeed={setTypingSpeed}
           toggleDrawer={toggleDrawer}
+          handleExtend={handleExtend}
         />
       </div>
 
